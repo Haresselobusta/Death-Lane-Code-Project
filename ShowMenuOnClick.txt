@@ -1,0 +1,46 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class ShowMenuOnClick : MonoBehaviour
+{
+    [Header("Parent of Buttons")]
+    public GameObject buttonsParent;
+
+    [Header("Press Anywhere Text")]
+    public GameObject pressAnywhereText;
+
+    [Header("Panels")]
+    public GameObject mainMenu;      // Parent of Play/Quit/HowToPlay buttons
+    public GameObject tutorialPanel;
+
+    private bool menuShown = false; // already hidden from the start
+
+    void Update()
+    {
+        // Detect click (mouse or touch)
+        if (!menuShown && (Input.GetMouseButtonDown(0) || Input.touchCount > 0)) // if menuShown is false and pressed the mouse button or the number of touch was more than zero, it call out the user defined fuction
+        {
+            ShowMenu(); //if true, it show the hidden buttons
+        }
+    }
+
+    void ShowMenu()
+    {
+        buttonsParent.SetActive(true); // turns true if the condition met
+        if (pressAnywhereText != null) // if pressedAnywhere was not null anymore, it hide the first text through false
+            pressAnywhereText.SetActive(false); // Hide the prompt
+        menuShown = true; // the hidden button will appear or equal to true
+    }
+
+    public void ShowTutorial()
+    {
+        mainMenu.SetActive(false);      // Hide main menu
+        tutorialPanel.SetActive(true);  // Show tutorial
+    }
+
+    public void CloseTutorial()
+    {
+        tutorialPanel.SetActive(false); // Hide tutorial
+        mainMenu.SetActive(true);       // Show main menu
+    }
+}

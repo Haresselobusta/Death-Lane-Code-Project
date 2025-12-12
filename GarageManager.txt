@@ -1,0 +1,62 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GarageManager : MonoBehaviour
+{
+    public static GarageManager instance;
+
+    [Header("Garage Settings")]
+    public GameObject garageObject;
+    public float firstGarageDistance = 500f;  // first spawn at 500m
+    public float garageInterval = 1000f;     // next garage every +1000m
+
+    private float nextGarageDistance;
+    private bool canSpawnGarage = true;
+    private float moveSpeed;
+
+    private void Awake()
+    {
+        instance = this;
+
+        if (garageObject != null)
+            garageObject.SetActive(false); // hide garage at start
+
+        nextGarageDistance = firstGarageDistance;
+    }
+
+    private void Update()
+    {
+        if (GameManager.Instance.isGameOver) return;
+
+        // CHECK IF PLAYER REACHED NEXT GARAGE
+        if (DistanceTracker.Instance.distance >= nextGarageDistance && canSpawnGarage)
+        {
+            SpawnGarage();
+            canSpawnGarage = false;
+        }
+
+        // MOVE THE GARAGE IF ACTIVE
+        if (garageObject.activeSelf)
+        {
+            moveSpeed = GameManager.Instance.gameSpeed;
+            garageObject.transform.position += Vector3.left * moveSpeed * Time.deltaTime;
+
+            if (garageObject.transform.position.x < -20f)
+            {
+                garageObject.SetActive(false);
+
+                // Prepare for next garage
+                nextGarageDistance += garageInterval;
+                canSpawnGarage = true;
+            }
+        }
+    }
+
+    private void SpawnGarage()
+    {
+            garageObject.transform.position = new Vector3(20f, garageObject.transform.position.y);
+            garageObject.SetActive(true);
+        
+    }
+}

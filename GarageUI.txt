@@ -1,0 +1,274 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class GarageUI : MonoBehaviour
+{
+    public static float lastSavedSpeed;
+    public GameObject garagePanel;
+
+    public TMP_Text hpText;
+    private CarHealth car;
+
+    [Header("Best Score UI")]
+    public TMP_Text bestScoreText;
+
+    [Header("Loot")]
+    public Image loot1Image;
+    public TMP_Text loot1AmountText;
+    public Image loot2Image;
+    public TMP_Text loot2AmountText;
+    public Image loot3Image;
+    public TMP_Text loot3AmountText;
+
+    [Header("Attachment UI")]
+    public Button buyArmorButton;
+    public TMP_Text buyArmorButtonText;
+
+    [Header("Attachment UI 2")]
+    public Button buyLootDoublerButton;
+    public TMP_Text buyLootDoublerButtonText;
+
+    [Header("Attachment 3 UI")]
+    public Button buyAutoHealButton;
+    public TMP_Text buyAutoHealButtonText;
+
+    public Button repairButton;
+
+    private void Awake()
+    {
+        car = FindObjectOfType<CarHealth>();
+        if (car == null)
+            Debug.LogWarning("GarageUI: CarHealth not found in scene (Awake).");
+    }
+
+    private void UpdateBestScoreUI()
+    {
+        if (bestScoreText == null) return;
+
+        // Prevent reading before HighScoreManager is ready
+        if (HighScoreManager.Instance == null)
+        {
+            StartCoroutine(DelayedBestScoreUpdate());
+            return;
+        }
+
+        bestScoreText.SetText($"Best: {HighScoreManager.Instance.BestScore} m");
+    }
+
+    private IEnumerator DelayedBestScoreUpdate()
+    {
+        yield return new WaitForEndOfFrame();
+
+        if (HighScoreManager.Instance != null)
+            bestScoreText.SetText($"Best: {HighScoreManager.Instance.BestScore} m");
+    }
+
+    private void OnEnable()
+    {
+        // Attach the Repair button listener safely
+        if (repairButton != null)
+        {
+            repairButton.onClick.RemoveAllListeners();
+            repairButton.onClick.AddListener(OnRepairButtonClicked);
+        }
+        else
+        {
+            Debug.LogError("GarageUI: Repair Button is not assigned in inspector!");
+        }
+
+        if (buyArmorButton != null)
+        {
+            buyArmorButton.onClick.RemoveAllListeners();
+            buyArmorButton.onClick.AddListener(OnBuyArmorClicked);
+        }
+
+        if (buyLootDoublerButton != null)
+        {
+            buyLootDoublerButton.onClick.RemoveAllListeners();
+            buyLootDoublerButton.onClick.AddListener(OnBuyLootDoublerClicked);
+        }
+
+        if (buyAutoHealButton != null)
+        {
+            buyAutoHealButton.onClick.RemoveAllListeners();
+            buyAutoHealButton.onClick.AddListener(OnBuyAutoHealClicked);
+
+            if (buyAutoHealButtonText != null)
+            {
+                if (AttachmentManager.Instance != null && AttachmentManager.Instance.hasAutoHealAttachment)
+                    buyAutoHealButtonText.SetText("Purchased");
+                else
+                    buyAutoHealButtonText.SetText("Buy Auto Heal");
+            }
+        }
+
+        UpdateHPText();
+        UpdateLootUI();
+        UpdateBestScoreUI(); //
+    }
+
+    public void ShowGarage()
+    {
+        if (garagePanel != null)
+            garagePanel.SetActive(true);
+
+        UpdateHPText();
+        UpdateLootUI();
+    }
+
+    private void UpdateHPText()
+    {
+        if (car != null && hpText != null)
+        {
+            hpText.text = $"HP: {car.health} / {car.maxHealth}";
+        }
+    }
+
+    private void UpdateLootUI()
+    {
+        if (LootUI.Instance == null) return; // loot
+
+        loot1AmountText.text = LootUI.Instance.loot1.ToString();
+        loot2AmountText.text = LootUI.Instance.loot2.ToString();
+        loot3AmountText.text = LootUI.Instance.loot3.ToString();
+
+        if (repairButton != null)
+            repairButton.interactable = (LootUI.Instance.loot1 >= 3 && LootUI.Instance.loot2 >= 3);
+
+
+        if (buyArmorButton != null && AttachmentManager.Instance != null) // Attachment
+        {
+            bool already = AttachmentManager.Instance.hasArmorAttachment;
+            int cost = AttachmentManager.Instance.armorCostLoot3;
+            bool canBuy = LootUI.Instance.loot3 >= cost && !already;
+
+            buyArmorButton.interactable = canBuy;
+
+            if (buyArmorButtonText != null)
+            {
+                if (already) buyArmorButtonText.SetText("Purchased");
+                else buyArmorButtonText.SetText($"Buy Armor");
+            }
+        }
+
+        if (buyLootDoublerButton != null && AttachmentManager.Instance != null)
+        {
+            bool already = AttachmentManager.Instance.hasLootDoubler;
+            int cost = AttachmentManager.Instance.lootDoublerCostLoot3;
+            bool canBuy = LootUI.Instance.loot3 >= cost && !already;
+
+            buyLootDoublerButton.interactable = canBuy;
+
+            if (buyLootDoublerButtonText != null)
+            {
+                if (already) buyLootDoublerButtonText.SetText("Purchased");
+                else buyLootDoublerButtonText.SetText($"Buy Loot Doubler");
+            }
+        }
+
+        if (buyAutoHealButton != null && AttachmentManager.Instance != null)
+        {
+            bool already = AttachmentManager.Instance.hasAutoHealAttachment;
+            int cost = AttachmentManager.Instance.autoHealCostLoot3;
+            bool canBuy = LootUI.Instance.loot3 >= cost && !already;
+
+            buyAutoHealButton.interactable = canBuy;
+
+            if (buyAutoHealButtonText != null)
+            {
+                if (already) buyAutoHealButtonText.SetText("Purchased");
+                else buyAutoHealButtonText.SetText($"Buy Auto Heal");
+            }
+        }
+    }
+
+    public void OnRepairButtonClicked()
+    {
+        if (car == null || LootUI.Instance == null) return;
+
+        if (LootUI.Instance.loot1 >= 3 && LootUI.Instance.loot2 >= 3)
+        {
+            LootUI.Instance.loot1 -= 3;
+            LootUI.Instance.loot2 -= 3;
+
+            car.Repair(10);
+
+            UpdateHPText();
+            UpdateLootUI();
+        }
+        else
+        {
+            Debug.Log("Not enough loot to repair!");
+        }
+    }
+
+    public void OnBuyArmorClicked()
+    {
+        if (AttachmentManager.Instance == null) return;
+
+        bool success = AttachmentManager.Instance.PurchaseAttachment1();
+        Debug.Log("GarageUI: PurchaseAttachment1 returned: " + success);
+        if (success)
+        {
+            UpdateLootUI();
+            UpdateHPText();
+        }
+    }
+
+    public void OnBuyLootDoublerClicked()
+    {
+        if (AttachmentManager.Instance == null)
+        {
+            Debug.LogError("GarageUI: AttachmentManager instance missing.");
+            return;
+        }
+
+        if (AttachmentManager.Instance.PurchaseAttachment2())
+        {
+            UpdateLootUI();
+        }
+    }
+
+    public void OnBuyAutoHealClicked()
+    {
+        if (AttachmentManager.Instance == null) return;
+
+        bool success = AttachmentManager.Instance.PurchaseAttachment3();
+        if (success)
+        {
+            // Update UI
+            UpdateLootUI();
+            if (buyAutoHealButtonText != null)
+                buyAutoHealButtonText.SetText("Purchased");
+
+            Debug.Log("GarageUI: Auto Heal purchased successfully.");
+        }
+        else
+        {
+            Debug.Log("GarageUI: Failed to purchase Auto Heal (not enough loot or already bought).");
+        }
+    }
+
+
+    public void ContinueGame()
+    {
+        garagePanel.SetActive(false); // hide the interior
+
+        car.healthBar.value = car.health;
+        car.hpIndicator.SetText($"{car.health}/{car.maxHealth}");
+
+        LootUI.Instance.RefreshGameplayUI();
+
+        GameManager.Instance.isGameOver = false; // Resume the game
+
+        GameManager.Instance.gameSpeed = lastSavedSpeed;
+
+        if (DistanceTracker.Instance != null)
+            DistanceTracker.Instance.ResumeCounting();
+
+        AttachmentManager.Instance.ActivateAutoHeal();
+    }
+}

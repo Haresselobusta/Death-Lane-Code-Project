@@ -1,0 +1,14 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class LootMovement : MonoBehaviour
+{
+    private void Update()
+    {
+        transform.position += Vector3.left * GameManager.Instance.gameSpeed * Time.deltaTime;
+
+        if (transform.position.x < -20f)
+            Destroy(gameObject);
+    }
+}

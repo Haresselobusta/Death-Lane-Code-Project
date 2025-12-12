@@ -1,0 +1,22 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+public class StartButton : MonoBehaviour
+{
+    // Called by Play button
+    public void PlayGame()
+    {
+        // Load CutScene scene first
+        SceneManager.LoadScene("CutScene");
+    }
+
+    public void QuitGame()
+    {
+        Debug.Log("QUIT");
+        Application.Quit();
+    }
+
+    public void BackToHomeMenu()
+    {
+        SceneManager.LoadScene(3); // Assuming Main Menu is index 3
+    }
+}

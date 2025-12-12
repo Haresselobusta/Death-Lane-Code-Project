@@ -1,0 +1,60 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AudioManager : MonoBehaviour
+{
+
+    public static AudioManager Instance;
+
+    [Header("Gameplay")]
+    [SerializeField] AudioSource musicSource;
+    [SerializeField] AudioSource SFXSource;
+    public AudioClip background;
+
+    [Header("Gameplay SFX")]
+    public AudioClip carStartSFX;
+
+    [Header("Lane Switch SFX")]
+    public AudioClip laneChangeUpSFX;
+    public AudioClip laneChangeDownSFX;
+
+    [Header("UI SFX")]
+    public AudioClip uiClickSFX;
+
+    private void Awake()
+    {
+        // Make it a Singleton
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject); // stays when scene changes
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
+    private void Start()
+    {
+        PlayMusic(background);
+    }
+
+    public void PlayMusic(AudioClip clip)
+    {
+        if (clip == null) return;
+
+        musicSource.clip = clip;
+        musicSource.Play();
+    }
+
+
+    public void PlaySFX(AudioClip clip)
+    {
+        if (clip == null) return;
+
+        SFXSource.PlayOneShot(clip);
+    }
+}

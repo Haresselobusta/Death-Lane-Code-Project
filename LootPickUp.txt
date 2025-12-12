@@ -1,0 +1,26 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class LootPickUp : MonoBehaviour
+{
+    public AudioClip pickUpSFX; // Sound Effect
+
+    public int lootID;
+    public int amount = 1;
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Player"))
+        {
+            AudioManager.Instance.PlaySFX(pickUpSFX);
+
+            int multiplier = 1;
+            if (AttachmentManager.Instance != null)
+                multiplier = AttachmentManager.Instance.GetLootMultiplier(); // Uses the helper you added
+
+            LootUI.Instance.AddLoot(lootID, amount * multiplier); // Apply multiplier here
+            Destroy(gameObject);
+        }
+    }
+}

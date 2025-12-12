@@ -1,0 +1,96 @@
+using System;
+using TMPro;
+using Unity.Mathematics;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class CarHealth : MonoBehaviour
+{
+    public static event Action OnPlayerDeath;
+
+    [Header("Vehicle Health")]
+    public int health;
+    public int maxHealth = 100;
+    public Slider healthBar;
+    public TMP_Text hpIndicator;
+
+    [Header("Attachments / Mods")] // 3
+    public int damageReduction = 0;
+
+    // Buffer to accumulate fractional heals so small per-frame amounts add up
+    private float healBuffer = 0f;
+
+    private void Awake()
+    {
+        if (health <= 0)
+            health = maxHealth;
+    }
+
+    private void Start()
+    {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.carStartSFX);
+
+        if (AttachmentManager.Instance != null)
+            AttachmentManager.Instance.ApplyAllAttachmentsToCar();
+
+        if (healthBar != null)
+            healthBar.maxValue = maxHealth;
+
+        UpdateUI();
+    }
+
+    public void TakeDamage(int amount)
+    {
+        VehicleDamage(amount);
+    }
+
+    private void VehicleDamage(int amount)
+    {
+        int actualDamage = amount - damageReduction;//3
+        actualDamage = Mathf.Max(0, actualDamage);//
+
+        health -= actualDamage;
+        health = Mathf.Max(0, health);
+
+        UpdateUI();
+
+        if (health <= 0)
+        {
+            Destroy(gameObject);
+            OnPlayerDeath?.Invoke();
+        }
+    }
+
+    public void Repair(int amount)
+    {
+        health += amount;
+        health = Mathf.Min(health, maxHealth);
+
+        UpdateUI();
+    }
+
+    public void Heal(float amount)
+    {
+        if (amount <= 0f) return;
+
+        healBuffer += amount;
+
+        int wholeHP = Mathf.FloorToInt(healBuffer);
+
+        if (wholeHP > 0)
+        {
+            health = Mathf.Clamp(health + wholeHP, 0, maxHealth);
+            healBuffer -= wholeHP;
+            UpdateUI();
+        }
+    }
+
+    private void UpdateUI()
+    {
+        if (healthBar != null)
+            healthBar.value = health;
+
+        if (hpIndicator != null)
+            hpIndicator.SetText($"{health}/{maxHealth}");
+    }
+}

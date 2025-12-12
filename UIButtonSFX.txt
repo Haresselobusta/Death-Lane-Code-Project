@@ -1,0 +1,18 @@
+using UnityEngine;
+using UnityEngine.UI;
+
+public class UIButtonSFX : MonoBehaviour
+{
+    private void Awake()
+    {
+        Button btn = GetComponent<Button>();
+
+        // Add listener when button is clicked
+        btn.onClick.AddListener(PlayClickSound);
+    }
+
+    private void PlayClickSound()
+    {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.uiClickSFX);
+    }
+}

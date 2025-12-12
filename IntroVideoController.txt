@@ -1,0 +1,29 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.Video;
+
+public class IntroVideoController : MonoBehaviour
+{
+    public VideoPlayer videoPlayer;
+    public string nextSceneName = "Main Menu";
+
+    void Start()
+    {
+        Debug.Log("Intro Scene Started");
+
+        if (videoPlayer == null)
+        {
+            Debug.LogError("VideoPlayer not assigned!");
+            return;
+        }
+
+        videoPlayer.loopPointReached += OnVideoEnd;
+        videoPlayer.Play();
+    }
+
+    void OnVideoEnd(VideoPlayer vp)
+    {
+        Debug.Log("Video finished! Loading next scene...");
+        SceneManager.LoadScene(nextSceneName);
+    }
+}

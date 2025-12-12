@@ -1,0 +1,159 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class AttachmentManager : MonoBehaviour
+{
+    public static AttachmentManager Instance;
+
+    private CarHealth car; //called from another script (carHealth)
+
+    [Header("Attachment 1 (Armor)")]
+    public bool hasArmorAttachment = false;
+    public int armorDamageReduction = 3; //reduce the damage from zombies
+    public int armorCostLoot3 = 5; //amount of loot 3 need
+
+    [Header("Attachment 2 (Loot Doubler)")]
+    public bool hasLootDoubler = false;
+    public int lootDoublerCostLoot3 = 10; // cost of the loot
+
+    [Header("Attachment 3 (Auto Heal)")]
+    public bool hasAutoHealAttachment = false;
+    public int autoHealCostLoot3 = 8; // example cost
+    public bool autoHealActive = false;
+    public float healPerSecond = 1f;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+    }
+
+    private void Start()
+    {
+        car = FindObjectOfType<CarHealth>();
+        if (car == null) Debug.LogWarning("AttachmentManager: CarHealth not found.");
+
+        ApplyAllAttachmentsToCar();
+    }
+
+    private void Update()
+    {
+        if (!GameManager.Instance.isGameOver && autoHealActive && hasAutoHealAttachment)
+        {
+            HealOverTime();
+        }
+    }
+
+    public void ActivateAutoHeal()
+    {
+        if (!hasAutoHealAttachment) return; // only activate if purchased
+        autoHealActive = true;
+    }
+
+    private void HealOverTime()
+    {
+        if (car == null) return;
+        {
+            // Heals smoothly every frame
+            car.Heal(healPerSecond * Time.deltaTime);
+        }
+    }
+
+    public void StopAutoHeal()
+    {
+        autoHealActive = false;
+    }
+
+    public bool PurchaseAttachment1()
+    {
+        Debug.Log("Attempting to buy Armor...");
+
+        if (hasArmorAttachment) return false;
+        if (LootUI.Instance == null) return false;
+
+        if (LootUI.Instance.loot3 < armorCostLoot3)
+        {
+            Debug.Log("AttachmentManager: Not enough loot3 to buy armor.");
+            return false;
+        }
+
+        // Subtract cost
+        LootUI.Instance.loot3 -= armorCostLoot3;
+        LootUI.Instance.RefreshGameplayUI();
+
+        hasArmorAttachment = true;
+        // Apply immediately
+        ApplyAllAttachmentsToCar();
+
+        return true;
+    }
+
+    public bool PurchaseAttachment2()
+    {
+        Debug.Log("Attempting to buy Loot Doubler...");
+
+        if (hasLootDoubler) return false;
+        if (LootUI.Instance == null) return false;
+
+        if (LootUI.Instance.loot3 < lootDoublerCostLoot3)
+        {
+            Debug.Log("Not enough loot2 to buy Loot Doubler.");
+            return false;
+        }
+
+        LootUI.Instance.loot3 -= lootDoublerCostLoot3;
+        LootUI.Instance.RefreshGameplayUI();
+
+        hasLootDoubler = true;
+        Debug.Log("Loot Doubler purchased!");
+
+        return true;
+    }
+
+    public bool PurchaseAttachment3()
+    {
+        if (hasAutoHealAttachment) return false;
+        if (LootUI.Instance == null) return false;
+
+        if (LootUI.Instance.loot3 < autoHealCostLoot3)
+            return false;
+
+        LootUI.Instance.loot3 -= autoHealCostLoot3;
+        LootUI.Instance.RefreshGameplayUI();
+
+        hasAutoHealAttachment = true;
+        ActivateAutoHeal();
+
+        return true;
+    }
+
+    public int GetLootMultiplier()
+    {
+        return hasLootDoubler ? 2 : 1;
+    }
+
+    public void ApplyAllAttachmentsToCar()
+    {
+        if (car == null)
+            car = FindObjectOfType<CarHealth>();
+
+        if (car == null)
+        {
+            Debug.LogWarning("AttachmentManager: CarHealth not found.");
+            return;
+        }
+
+        int totalReduction = 0;
+
+        if (hasArmorAttachment)
+            totalReduction += armorDamageReduction; // 0 = 0 + 3 so the zero will be replaced by 3
+
+        car.damageReduction = totalReduction; // the damageReduction from carHealth will be now 3
+    }
+}

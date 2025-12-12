@@ -1,0 +1,28 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ZombieMovement : MonoBehaviour
+{
+    private float speed;
+    void Update()
+    {
+        ZombieRightToLeft();
+
+        if (transform.position.x < -20f)
+            Destroy(gameObject);
+    }
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    private void ZombieRightToLeft()
+    {
+        speed = GameManager.Instance.gameSpeed;
+        transform.position += Vector3.left * speed * Time.deltaTime;
+    }
+}

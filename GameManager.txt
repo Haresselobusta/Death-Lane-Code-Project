@@ -1,0 +1,57 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance;
+    public float initialGameSpeed = 8f;
+    public float gameSpeedIncrease = 0.3f;
+    public float gameSpeed { get; set; }
+
+    public bool isGameOver = false;//
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            DestroyImmediate(gameObject);
+    }
+
+    public void SetGameSpeed(float value)
+    {
+        gameSpeed = value;
+    }
+
+    private void OnEnable()
+    {
+        CarHealth.OnPlayerDeath += OnPlayerDeath;
+    }
+
+    private void OnDisable()
+    {
+        CarHealth.OnPlayerDeath -= OnPlayerDeath;
+    }
+
+    private void Start()
+    {
+        gameSpeed = initialGameSpeed; // This make the vehicle start at initial speed
+    }
+
+    private void Update()
+    {
+        if (isGameOver) return;
+
+        gameSpeed += gameSpeedIncrease * Time.deltaTime; //This make the game faster
+    }
+
+    private void OnPlayerDeath()
+    {
+        isGameOver = true;
+        gameSpeed = 0;
+
+        if (DistanceTracker.Instance != null)
+            DistanceTracker.Instance.StopAndReportFinal();
+    }
+}

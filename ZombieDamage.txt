@@ -1,0 +1,28 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Misc;
+using UnityEngine;
+
+public class ZombieDamage : MonoBehaviour
+{
+    [Header("Audio")]
+    public AudioClip hitSFX;
+
+    private ZombieStats stats;
+    private void Awake()
+    {
+        stats = GetComponent<ZombieStats>();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            AudioManager.Instance.PlaySFX(hitSFX);
+
+            CarHealth vehicleHealth = collision.gameObject.GetComponent<CarHealth>();
+            vehicleHealth.TakeDamage(stats.zombieDamage);
+        }
+    }
+}

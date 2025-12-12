@@ -1,0 +1,33 @@
+using UnityEngine;
+using UnityEngine.Video;
+using UnityEngine.SceneManagement;
+
+public class CutsceneManager : MonoBehaviour
+{
+    public VideoPlayer videoPlayer;
+
+    private void Awake()
+    {
+        Debug.Log("CutsceneManager: AWAKE");
+    }
+
+    private void Start()
+    {
+        Debug.Log("CutsceneManager: START");
+
+        if (videoPlayer == null)
+        {
+            Debug.LogError("Video Player is NOT assigned!");
+            return;
+        }
+
+        videoPlayer.loopPointReached += OnVideoFinished;
+        Debug.Log("Listener added to videoPlayer");
+    }
+
+    private void OnVideoFinished(VideoPlayer vp)
+    {
+        Debug.Log("Video Finished! Loading Game Scene...");
+        SceneManager.LoadScene("Start");
+    }
+}

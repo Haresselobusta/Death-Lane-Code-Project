@@ -1,0 +1,21 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class MainMenuAudio : MonoBehaviour
+{
+    private AudioSource audioSrc;
+
+    private void Awake()
+    {
+        audioSrc = GetComponent<AudioSource>();
+        audioSrc.loop = true;
+        audioSrc.Play();
+    }
+
+    public void StopMusic()
+    {
+        audioSrc.Stop();
+    }
+}

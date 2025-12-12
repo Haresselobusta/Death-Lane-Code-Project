@@ -1,0 +1,38 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class CarMovement : MonoBehaviour
+{
+    [Header("Vehicle Movement")]
+    private Rigidbody2D rb;
+    private float yAxis;
+    private float speed = 8f;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        UpAndDownMovement();
+    }
+
+    private void UpAndDownMovement()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) // Sound effects
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.laneChangeUpSFX);
+        }
+
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S))
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.laneChangeDownSFX);
+        }
+
+
+        yAxis = Input.GetAxisRaw("Vertical");
+        rb.velocity = new Vector2(rb.velocity.x, yAxis * speed);
+    }
+}

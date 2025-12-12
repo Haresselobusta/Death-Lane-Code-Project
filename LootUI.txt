@@ -1,0 +1,54 @@
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+
+public class LootUI : MonoBehaviour
+{
+    public static LootUI Instance;
+
+    [Header("Loot Counters")]
+    public TMP_Text loot1Text;
+    public TMP_Text loot2Text;
+    public TMP_Text loot3Text;
+
+    [Header("Counts")]
+    public int loot1;
+    public int loot2;
+    public int loot3;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+    }
+
+
+    public void AddLoot(int lootID, int amount)
+    {
+        switch (lootID)
+        {
+            case 0:
+                loot1 += amount;
+                break;
+
+            case 1:
+                loot2 += amount;
+                break;
+
+            case 2:
+                loot3 += amount;
+                break;
+        }
+
+        RefreshGameplayUI();
+
+    }
+
+    public void RefreshGameplayUI()
+    {
+        loot1Text.text = loot1.ToString();
+        loot2Text.text = loot2.ToString();
+        loot3Text.text = loot3.ToString();
+    }
+}

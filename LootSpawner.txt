@@ -1,0 +1,55 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+[System.Serializable]
+public class LootType
+{
+    public int lootID;
+    public GameObject prefab;
+}
+
+public class LootSpawner : MonoBehaviour
+{
+    [Header("Spawn Points")]
+    public Transform topPoint;
+    public Transform bottomPoint;
+    public Transform spawnPoint;
+
+    [Header("Loot Types")]
+    public List<LootType> lootList = new List<LootType>();
+
+    private float timer;
+
+    private void Start()
+    {
+        timer = Random.Range(2f, 5f);
+    }
+
+    private void Update()
+    {
+        if (GameManager.Instance.isGameOver) return;
+
+        timer -= Time.deltaTime;
+
+        if (timer <= 0f)
+        {
+            SpawnLoot();
+            timer = Random.Range(2f, 5f);
+        }
+    }
+
+    private void SpawnLoot()
+    {
+        if (lootList.Count == 0) return;
+
+        float randomY = Random.Range(bottomPoint.position.y, topPoint.position.y);
+        Vector3 spawnPos = new Vector3(spawnPoint.position.x, randomY, 0);
+
+        int randomIndex = Random.Range(0, lootList.Count);
+
+        GameObject loot = Instantiate(lootList[randomIndex].prefab, spawnPos, Quaternion.identity);
+
+        LootPickUp pickUp = loot.GetComponent<LootPickUp>();
+        pickUp.lootID = lootList[randomIndex].lootID;
+    }
+}

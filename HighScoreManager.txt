@@ -1,0 +1,55 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class HighScoreManager : MonoBehaviour
+{
+    public static HighScoreManager Instance { get; private set; }
+
+    private const string HighScoreKey = "High_Score_V1";
+    public int BestScore {  get; private set; }
+
+    private void Awake()
+    {
+        if(Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            Load();
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+        
+    }
+
+    private void Load()
+    {
+        BestScore = PlayerPrefs.GetInt(HighScoreKey, 0);
+    }
+
+    private void Save()
+    {
+        PlayerPrefs.SetInt(HighScoreKey, BestScore);
+        PlayerPrefs.Save();
+    }
+
+    /// Try to set a new high score. Returns true if record was broken.
+
+    public bool TrySetHighScore(int score)
+    {
+        if (score <= BestScore) return false;
+
+        BestScore = score;
+        Save();
+        return true;
+    }
+
+    private void ResetHighScore()
+    {
+        BestScore = 0;
+        PlayerPrefs.DeleteKey(HighScoreKey);
+        PlayerPrefs.Save();
+    }
+}
